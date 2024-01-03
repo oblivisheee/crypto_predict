@@ -1,0 +1,4 @@
+ccxt
+tensorflow
+scikit-learn
+pandas

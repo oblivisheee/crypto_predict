@@ -37,7 +37,11 @@ def train_model(model, X_train, y_train):
     early_stopping = EarlyStopping(monitor='val_loss', patience=3)
 
     # Train the model for 100 epochs with a batch size of 32 and use 20% of the data for validation
-    model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, callbacks=[early_stopping])
+    history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, callbacks=[early_stopping])
+
+    # Print the training process
+    print("Training process:")
+    print(history.history)
 
 def predict_price(model, crypto_data):
     # Dictionary to store predictions for each crypto currency
