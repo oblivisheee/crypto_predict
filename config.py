@@ -13,12 +13,3 @@ CRYPTO_CURRENCIES = ['BTC', 'ETH', 'SOL', 'ATOM', 'PERP']
 HISTORICAL_DATA_PERIOD = '1d' # Interval fixed for Binance, set to maximum '1d'
 
 DECISION_THRESHOLD = 0.05
-
-# Terminal GUI Configuration
-GUI_CONFIG = {
-    'title': 'Crypto Currency Analyzer',
-    'width': 800,
-    'height': 600,
-    'resizable': False
-}
-
