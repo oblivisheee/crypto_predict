@@ -4,8 +4,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Dropout, ReLU
 from tensorflow.keras.layers import MultiHeadAttention, LayerNormalization
 from tensorflow.keras.callbacks import EarlyStopping
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 def create_model():
     inputs = Input(shape=(None, 1))
@@ -18,14 +16,13 @@ def create_model():
     model.compile(loss='mse', optimizer='adam')
     return model
 
-def train_model(model, X_train, y_train):
-    scaler = MinMaxScaler(feature_range=(0, 1), copy=True)
-    X_train = scaler.fit_transform(X_train)
-    y_train = scaler.transform(y_train)
+def train_model(model, X_train, y_train, scaler):
+    X_train = scaler.transform(X_train.reshape(-1, 1))
+    y_train = scaler.transform(y_train.reshape(-1, 1))
     early_stopping = EarlyStopping(monitor='val_loss', patience=3)
     history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, callbacks=[early_stopping])
     print(history.history)
-    return model, scaler
+    return model
 
 def predict_price(model, crypto_data, date=None):
     predictions = {}

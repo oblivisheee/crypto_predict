@@ -12,6 +12,11 @@ def fetch_data(coin: str, return_times: int=100):
             'defaultType': 'future'
         }
     })
+    
+    if not return_times or not return_times.isdigit():
+        return_times = 100
+    else:
+        return_times = int(return_times)
     coins = [coin]
     for crypto in coins:
         for i in tqdm(range(return_times), desc="Fetching data"):
