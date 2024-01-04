@@ -1,35 +1,42 @@
-
-# data_fetcher.py
-
-# Importing necessary libraries
 import ccxt
 import pandas as pd
-from config import CRYPTO_CURRENCIES, HISTORICAL_DATA_PERIOD
+from datetime import datetime, timedelta
+from config import  HISTORICAL_DATA_PERIOD
+from tqdm import tqdm
 
-def fetch_data():
-    # Dictionary to store data for each crypto currency
+def fetch_data(coin: str, return_times: int=100):
     crypto_data = {}
 
-    # Initialize the ccxt library
-    exchange = ccxt.binance()
+    exchange = ccxt.binance({
+        'options': {
+            'defaultType': 'future'
+        }
+    })
+    coins = [coin]
+    for crypto in coins:
+        for i in tqdm(range(return_times), desc="Fetching data"):
+            end_date = datetime.now() - timedelta(days=i*30)
+            start_date = end_date - timedelta(days=30)
 
-    # Loop through each crypto currency
-    for crypto in CRYPTO_CURRENCIES:
-        # Fetch historical data
-        # Increase the timeframe to fetch maximum historical data for better training
-        data = exchange.fetch_ohlcv(crypto+'/USDT', HISTORICAL_DATA_PERIOD, since=0) 
+            try:
+                data = exchange.fetch_ohlcv(crypto+'/USDT', HISTORICAL_DATA_PERIOD, 
+                                            since=int(start_date.timestamp() * 1000), 
+                                            limit=1000)
+                if not data:
+                    raise ValueError(f"No data returned from exchange for {crypto}")
 
-        # Convert the data to a pandas DataFrame
-        df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
 
-        # Convert the timestamp to a datetime object
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+                df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
 
-        # Set the date as the index
-        df.set_index('timestamp', inplace=True)
+                df.set_index('timestamp', inplace=True)
 
-        # Store the DataFrame in the dictionary
-        crypto_data[crypto] = df
+                if crypto in crypto_data:
+                    crypto_data[crypto] = pd.concat([crypto_data[crypto], df])
+                else:
+                    crypto_data[crypto] = df
 
+            except (ccxt.NetworkError, ccxt.ExchangeError, ccxt.BaseError, ValueError) as e:
+                print(f"Error occurred while fetching data for {crypto}: {e}")
+                continue
     return crypto_data
-
